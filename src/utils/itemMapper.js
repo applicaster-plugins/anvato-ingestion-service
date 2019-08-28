@@ -8,6 +8,7 @@ module.exports.itemMapper = (image_key = 'image_base') => item => {
       title,
       content: description,
       pubDate,
+      updateDate,
       thumbnail,
       mediaGroup
     } = item;
@@ -30,8 +31,10 @@ module.exports.itemMapper = (image_key = 'image_base') => item => {
       };
     }
 
+    const adate = pubDate ? pubDate : updateDate;
+
     const external_id = guid;
-    const date_published = moment(new Date(pubDate)).format('YYYYMMDDTHH:mmZ');
+    const date_published = moment(new Date(adate)).format('YYYYMMDDTHH:mmZ');
 
     const videos = mediaGroup['media:content'].map(video => video.$);
     const videoUrl = getVideoSource(videos);

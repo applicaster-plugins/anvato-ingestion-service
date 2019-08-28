@@ -8,7 +8,7 @@ const fetch = async (req, res) => {
   try {
     const parser = new Parser({
       customFields: {
-        item: [['media:thumbnail', 'thumbnail'], ['media:group', 'mediaGroup']]
+        item: [['media:thumbnail', 'thumbnail'], ['media:group', 'mediaGroup'], ['updateDate', 'updateDate']]
       }
     });
 
