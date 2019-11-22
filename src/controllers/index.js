@@ -1,32 +1,20 @@
-const Parser = require('rss-parser');
 const builder = require('xmlbuilder');
-const btoa = require('btoa');
+const axios = require('axios');
 
+const { config } = require('../config');
 const { itemMapper } = require('../utils/itemMapper');
 
 const fetch = async (req, res) => {
   try {
-    const parser = new Parser({
-      customFields: {
-        item: [['media:thumbnail', 'thumbnail'], ['media:group', 'mediaGroup'], ['updateDate', 'updateDate']]
-      }
-    });
-
-    const { url, image_key } = req.query;
-
-    const feed = await parser.parseURL(url);
-    const items = feed.items.map(itemMapper(image_key));
+    const response = await axios.get(config.api.baseUrl);
+    const items = response.data.docs.map(itemMapper);
 
     const resources = {};
     const root = builder.create({
       resources
     });
 
-    const idPrefix = btoa(url);
     items.forEach(resource => {
-      resource.attributes.external_id = `${idPrefix}_2_${
-        resource.attributes.external_id
-      }`;
       return root.ele({ resource });
     });
 
@@ -38,7 +26,7 @@ const fetch = async (req, res) => {
     res.setHeader('Expires', 0);
     res.send(result);
   } catch (err) {
-    res.send(500, err.message);
+    res.status(500).send(err.message);
   }
 };
 

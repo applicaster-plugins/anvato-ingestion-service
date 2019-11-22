@@ -1,46 +1,50 @@
 const moment = require('moment');
-const { getVideoSource } = require('../utils/getVideoSource');
+const { config } = require('../config');
 
-module.exports.itemMapper = (image_key = 'image_base') => item => {
+module.exports.itemMapper = item => {
   try {
     const {
-      guid,
-      title,
-      content: description,
-      pubDate,
-      updateDate,
-      thumbnail,
-      mediaGroup
+      obj_id: id,
+      c_title_s: title,
+      c_description_s: description,
+      c_ts_publish_l: published,
+      media_url,
+      thumbnails
     } = item;
 
     const enabled = 'true';
     const free = 'true';
     const type = 'video';
 
-    let image_assets;
-    if (!thumbnail) {
-      console.log(`item has not thumbnail! ${guid} ${title}`);
-    } else {
-      const image_asset_base = {
-        key: image_key,
-        url: thumbnail.$.url
-      };
+    const image_asset = thumbnails
+      .map(imageItem => {
+        try {
+          const { url, role } = imageItem;
+          const key = config.imageKeyMapping[role]
+            ? config.imageKeyMapping[role]
+            : 'image_base';
 
-      image_assets = {
-        image_asset: [image_asset_base]
-      };
-    }
+          return {
+            key,
+            url
+          };
+        } catch (err) {
+          return null;
+        }
+      })
+      .filter(i => i);
 
-    const adate = pubDate ? pubDate : updateDate;
+    const image_assets = {
+      image_asset
+    };
 
-    const external_id = guid;
-    const date_published = moment(new Date(adate)).format('YYYYMMDDTHH:mmZ');
-
-    const videos = mediaGroup['media:content'].map(video => video.$);
-    const videoUrl = getVideoSource(videos);
+    const external_id = id;
+    const date_published = moment(new Date(published)).format(
+      'YYYYMMDDTHH:mmZ'
+    );
 
     const alternative_streams = {
-      default: videoUrl
+      default: media_url
     };
 
     const attributes = {
