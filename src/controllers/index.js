@@ -6,7 +6,8 @@ const { itemMapper } = require('../utils/itemMapper');
 
 const fetch = async (req, res) => {
   try {
-    const response = await axios.get(config.api.baseUrl);
+    const { url } = req.query;
+    const response = await axios.get(url);
     const items = response.data.docs.map(itemMapper);
 
     const resources = {};
